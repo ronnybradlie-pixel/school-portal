@@ -19,16 +19,13 @@ export default function AdminDashboard() {
 
       <div className="bg-white p-4 rounded shadow">
         <textarea
-          className="w-full border p-2 rounded mb-4"
-          placeholder="Send message to parents"
-          value={message}
+          className="w-full border p-2 rounded mb-4"placeholder="Send message to parents" value={message}
           onChange={e => setMessage(e.target.value)}
         />
 
         <button
           onClick={sendMessage}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
           Send Message
         </button>
       </div>

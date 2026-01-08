@@ -1,9 +1,7 @@
-import React from 'react'
+import AdminDashboard from "./Components/AdminDashboard";
 
 function App() {
-  return (
-    <div>App</div>
-  )
+  return <AdminDashboard/>;
 }
 
-export default App
+export default App;
