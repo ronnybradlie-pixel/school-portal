@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Components/Login";
 import AdminDashboard from "./Components/AdminDashboard";
 import ParentDashboard from "./Components/ParentDashboard";
-import PrivateRoute from ".//PrivateRoute";
+import PrivateRoute from ".Components/PrivateRoute";
 
 function App() {
   return (
