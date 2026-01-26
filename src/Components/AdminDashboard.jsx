@@ -144,7 +144,7 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab("fees")}
             className={`w-full text-left px-4 py-2 rounded transition ${
               activeTab === "fees"
-                ? "bg-purple-600 text-white font-semibold"
+                ? "bg-blue-600 text-white font-semibold"
                 : "text-gray-300 hover:bg-slate-700"
             }`}
           >
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
               />
               <button
                 onClick={addFees}
-                className="w-full bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 font-semibold">
+                className="w-full bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold">
                 Add Fees
               </button>
             </div>

@@ -48,7 +48,7 @@ export default function ParentDashboard() {
       <h2 className="text-2xl font-bold mb-4 text-white">Parent / Student Dashboard</h2>
 
       <div className="flex gap-6">
-        <aside className="w-64 bg-slate-800 p-4 rounded shadow border border-slate-700 h-fit">
+        <aside className="w-64 bg-white-800 p-4 rounded shadow border border-slate-700 h-fit">
           <button
             onClick={() => setActiveTab("notifications")}
             className={`w-full text-left px-4 py-2 rounded mb-2 transition ${
