@@ -7,15 +7,18 @@ import PrivateRoute from "./Components/PrivateRoute";
 
 function App() {
   return (
+    <BrowserRouter>
       <Routes>
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>}/>
-        <Route path="/parent" element={<PrivateRoute><ParentDashboard /></PrivateRoute>}/>
+        <Route element={<PrivateRoute />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/parent" element={<ParentDashboard />} />
+        </Route>
         <Route path="*" element={<Navigate to="/login" />} />
-
       </Routes>
+      </BrowserRouter>
   );
 }
 
