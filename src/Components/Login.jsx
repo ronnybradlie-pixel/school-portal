@@ -15,6 +15,12 @@ export default function Login() {
   const handleLogin = async () => {
     setMessage("");
 
+    if (!email || !password) {
+      setMessageType("error")
+      setMessage("Please enter email and password")
+      return;
+    }
+
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
