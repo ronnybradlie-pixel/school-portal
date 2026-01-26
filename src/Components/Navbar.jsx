@@ -1,11 +1,16 @@
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+    return unsubscribe;
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -23,27 +28,43 @@ export default function Navbar() {
         
         <ul className="flex gap-6 items-center">
           <li>
-            <a href="/parent" className="hover:text-blue-200 transition">
+            <Link to="/parent" className="hover:text-blue-200 transition">
               Students
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/admin" className="hover:text-blue-200 transition">
+            <Link to="/admin" className="hover:text-blue-200 transition">
               Admin
-            </a>
+            </Link>
           </li>
-          <li>
-            <span className="text-sm text-blue-100">
-              {user?.email || "Guest"}
-            </span>
-          </li>
-          <li>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-700 px-4 py-2 rounded transition">
-              Logout
-            </button>
-          </li>
+
+          {user ? (
+            <>
+              <li>
+                <span className="text-sm text-blue-100">{user.email}</span>
+              </li>
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-700 px-4 py-2 rounded transition">
+                  Logout
+                </button>
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <Link to="/login" className="hover:text-blue-200 transition">
+                  Login
+                </Link>
+              </li>
+              <li>
+                <Link to="/register" className="hover:text-blue-200 transition">
+                  Register
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
       </div>
     </nav>
