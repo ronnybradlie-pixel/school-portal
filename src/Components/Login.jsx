@@ -58,16 +58,16 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-md w-96">
-        <h2 className="text-2xl font-bold text-center mb-6">Student Portal</h2>
+    <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="bg-slate-800 p-8 rounded-xl shadow-md w-96 border border-slate-700">
+        <h2 className="text-2xl font-bold text-center mb-6 text-white">Login</h2>
 
         {message && (
           <div
             className={`mb-4 p-2 text-center rounded ${
               messageType === "success"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
+                ? "bg-green-500 text-white"
+                : "bg-red-500 text-white"
             }`}
           >
             {message}
@@ -75,7 +75,7 @@ export default function Login() {
         )}
 
         <input
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-2 mb-4 border border-slate-600 bg-slate-700 text-white rounded placeholder-gray-400"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -83,7 +83,7 @@ export default function Login() {
 
         <input
           type="password"
-          className="w-full p-2 mb-4 border rounded"
+          className="w-full p-2 mb-4 border border-slate-600 bg-slate-700 text-white rounded placeholder-gray-400"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

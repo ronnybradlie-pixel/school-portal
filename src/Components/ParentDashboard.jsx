@@ -43,28 +43,27 @@ export default function ParentDashboard() {
   if (loading) return <div className="text-center p-6">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h2 className="text-2xl font-bold mb-4">Parent / Student Dashboard</h2>
+    <div className="min-h-screen bg-slate-900 p-6">
+      <h2 className="text-2xl font-bold mb-4 text-white">Parent / Student Dashboard</h2>
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="bg-white p-4 rounded shadow">
-          <h3 className="font-semibold mb-2">Messages</h3>
+          <h3 className="font-semibold mb-2">Notifications</h3>
           {messages.length > 0 ? (
             messages.map((msg, i) => (
               <p key={i} className="border-b py-1">{msg.text}</p>
             ))
           ) : (
-            <p className="text-gray-500">No messages</p>
+            <p className="text-gray-500">No Notifications</p>
           )}
         </div>
 
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-semibold mb-2">Results</h3>
           {results ? (
-            <>
-              <p>Math: {results.math}%</p>
-              <p>English: {results.english}%</p>
-            </>
+            Object.entries(results).map(([key, value]) => 
+              key !== "updatedAt" && <p key={key}>{key.charAt(0).toUpperCase() + key.slice(1)}: {value}%</p>
+            )
           ) : (
             <p className="text-gray-500">No results available</p>
           )}

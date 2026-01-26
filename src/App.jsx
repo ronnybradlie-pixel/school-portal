@@ -4,10 +4,13 @@ import Register from "./Components/Register";
 import AdminDashboard from "./Components/AdminDashboard";
 import ParentDashboard from "./Components/ParentDashboard";
 import PrivateRoute from "./Components/PrivateRoute";
+import Navbar from "./Components/Navbar";
+import Footer from "./Components/Footer";
 
 function App() {
   return (
     <BrowserRouter>
+      <Navbar />
       <Routes>
 
         <Route path="/login" element={<Login />} />
@@ -18,6 +21,7 @@ function App() {
         </Route>
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
+      <Footer />
       </BrowserRouter>
   );
 }

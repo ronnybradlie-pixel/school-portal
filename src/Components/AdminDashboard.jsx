@@ -5,57 +5,104 @@ import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 export default function AdminDashboard() {
   const [message, setMessage] = useState("");
   const [studentId, setStudentId] = useState("");
-  const [math, setMath] = useState("");
-  const [english, setEnglish] = useState("");
+  const [subject, setSubject] = useState("");
+  const [score, setScore] = useState("");
   const [totalFees, setTotalFees] = useState("");
   const [paidFees, setPaidFees] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState("");
+
+  const clearMessage = () => {
+    setTimeout(() => {
+      setStatusMessage("");
+      setStatusType("");
+    }, 3000);
+  };
 
   const sendMessage = async () => {
-    if (!message) return;
-    await addDoc(collection(db, "messages"), {
-      text: message,
-      date: new Date()
-    });
-    setMessage("");
-    alert("Message sent");
+    if (!message) {
+      setStatusMessage("Please enter a message");
+      setStatusType("error");
+      clearMessage();
+      return;
+    }
+    try {
+      await addDoc(collection(db, "messages"), {
+        text: message,
+        date: new Date()
+      });
+      setMessage("");
+      setStatusMessage("Message sent successfully!");
+      setStatusType("success");
+      clearMessage();
+    } catch (error) {
+      setStatusMessage("Error sending message: " + error.message);
+      setStatusType("error");
+      clearMessage();
+    }
   };
 
   const addResults = async () => {
-    if (!studentId || !math || !english) {
-      alert("Please fill all fields");
+    if (!studentId || !subject || !score) {
+      setStatusMessage("Please fill all fields");
+      setStatusType("error");
+      clearMessage();
       return;
     }
-    await setDoc(doc(db, "results", studentId), {
-      math: parseInt(math),
-      english: parseInt(english),
-      updatedAt: new Date()
-    });
-    setStudentId("");
-    setMath("");
-    setEnglish("");
-    alert("Results added");
+    try {
+      await setDoc(doc(db, "results", studentId), {
+        [subject]: parseInt(score),
+        updatedAt: new Date()
+      }, { merge: true });
+      setStudentId("");
+      setSubject("");
+      setScore("");
+      setStatusMessage("Results added successfully!");
+      setStatusType("success");
+      clearMessage();
+    } catch (error) {
+      setStatusMessage("Error adding results: " + error.message);
+      setStatusType("error");
+      clearMessage();
+    }
   };
 
   const addFees = async () => {
     if (!studentId || !totalFees || !paidFees) {
-      alert("Please fill all fields");
+      setStatusMessage("Please fill all fields");
+      setStatusType("error");
+      clearMessage();
       return;
     }
-    await setDoc(doc(db, "fees", studentId), {
-      total: parseInt(totalFees),
-      paid: parseInt(paidFees),
-      balance: parseInt(totalFees) - parseInt(paidFees),
-      updatedAt: new Date()
-    });
-    setStudentId("");
-    setTotalFees("");
-    setPaidFees("");
-    alert("Fees added");
+    try {
+      await setDoc(doc(db, "fees", studentId), {
+        total: parseInt(totalFees),
+        paid: parseInt(paidFees),
+        balance: parseInt(totalFees) - parseInt(paidFees),
+        updatedAt: new Date()
+      });
+      setStudentId("");
+      setTotalFees("");
+      setPaidFees("");
+      setStatusMessage("Fees added successfully!");
+      setStatusType("success");
+      clearMessage();
+    } catch (error) {
+      setStatusMessage("Error adding fees: " + error.message);
+      setStatusType("error");
+      clearMessage();
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h2 className="text-2xl font-bold mb-4">Admin Dashboard</h2>
+    <div className="min-h-screen bg-slate-900 p-6">
+      <h2 className="text-2xl font-bold mb-4 text-white">Admin Dashboard</h2>
+
+      {statusMessage && (
+        <div className={`mb-4 p-4 rounded ${statusType === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+          {statusMessage}
+        </div>
+      )}
 
       <div className="grid md:grid-cols-3 gap-4">
         {/* Messages Section */}
@@ -85,17 +132,17 @@ export default function AdminDashboard() {
             className="w-full border p-2 rounded mb-2"
           />
           <input
-            type="number"
-            placeholder="Math Score"
-            value={math}
-            onChange={e => setMath(e.target.value)}
+            type="text"
+            placeholder="Subject (e.g. Math, English, Science)"
+            value={subject}
+            onChange={e => setSubject(e.target.value)}
             className="w-full border p-2 rounded mb-2"
           />
           <input
             type="number"
-            placeholder="English Score"
-            value={english}
-            onChange={e => setEnglish(e.target.value)}
+            placeholder="Score"
+            value={score}
+            onChange={e => setScore(e.target.value)}
             className="w-full border p-2 rounded mb-4"
           />
           <button
@@ -131,7 +178,7 @@ export default function AdminDashboard() {
           />
           <button
             onClick={addFees}
-            className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+            className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
             Add Fees
           </button>
         </div>
