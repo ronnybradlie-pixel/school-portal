@@ -74,9 +74,6 @@ export default function Navbar() {
           {user ? (
             <>
               <li>
-                <span className="text-sm text-blue-100">{user.email}</span>
-              </li>
-              <li>
                 <button
                   onClick={handleLogout}
                   className="bg-red-500 hover:bg-red-700 px-4 py-2 rounded transition">

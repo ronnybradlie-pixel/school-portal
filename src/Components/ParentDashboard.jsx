@@ -99,13 +99,26 @@ export default function ParentDashboard() {
             <div className="bg-slate-800 p-6 rounded shadow border border-slate-700">
               <h3 className="text-lg font-semibold mb-4 text-white">Results</h3>
               {results ? (
-                Object.entries(results).map(([key, value]) => 
-                  key !== "updatedAt" && (
-                    <p key={key} className="text-gray-200 py-2 text-lg">
-                      {key.charAt(0).toUpperCase() + key.slice(1)}: <span className="font-semibold text-green-400">{value}%</span>
+                <>
+                  {Object.entries(results).map(([key, value]) => 
+                    key !== "updatedAt" && (
+                      <p key={key} className="text-gray-200 py-2 text-lg">
+                        {key.charAt(0).toUpperCase() + key.slice(1)}: <span className="font-semibold text-green-400">{value}%</span>
+                      </p>
+                    )
+                  )}
+                  <div className="mt-4 pt-4 border-t border-slate-600">
+                    <p className="text-gray-200 py-2 text-lg font-semibold">
+                      Total Score: <span className="text-blue-400">
+                        {Math.round(
+                          Object.entries(results).reduce((sum, [key, value]) => 
+                            key !== "updatedAt" ? sum + value : sum, 0
+                          ) / Object.entries(results).filter(([key]) => key !== "updatedAt").length
+                        )}%
+                      </span>
                     </p>
-                  )
-                )
+                  </div>
+                </>
               ) : (
                 <p className="text-gray-400">No results available</p>
               )}
