@@ -1,18 +1,27 @@
 import { useState, useEffect } from "react";
 import { db } from "../firebase";
-import { addDoc, collection, doc, setDoc, getDocs } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+} from "firebase/firestore";
 
 export default function AdminDashboard() {
-  const [message, setMessage] = useState("");
+  // GENERAL STATES
+  const [activeTab, setActiveTab] = useState("students");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState("");
+  const [messagesList, setMessagesList] = useState([]);
+  const [studentName, setStudentName] = useState("");
+  const [studentClass, setStudentClass] = useState("");
   const [studentId, setStudentId] = useState("");
   const [subject, setSubject] = useState("");
   const [score, setScore] = useState("");
   const [totalFees, setTotalFees] = useState("");
   const [paidFees, setPaidFees] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
-  const [statusType, setStatusType] = useState("");
-  const [messagesList, setMessagesList] = useState([]);
-  const [activeTab, setActiveTab] = useState("message");
+  const [message, setMessage] = useState("");
 
   const clearMessage = () => {
     setTimeout(() => {
@@ -23,226 +32,246 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchMessages = async () => {
-      try {
-        const data = await getDocs(collection(db, "messages"));
-        setMessagesList(data.docs.map(d => d.data()));
-      } catch (e) {
-        console.error("Error fetching messages:", e);
-      }
+      const snap = await getDocs(collection(db, "messages"));
+      setMessagesList(snap.docs.map((d) => d.data()));
     };
     fetchMessages();
   }, []);
 
-  const sendMessage = async () => {
-    if (!message) {
-      setStatusMessage("Please enter a message");
+  const generateStudentId = async () => {
+    const year = new Date().getFullYear();
+    const snap = await getDocs(collection(db, "students"));
+    const count = snap.size + 1;
+    return `STU-${year}-${String(count).padStart(4, "0")}`;
+  };
+
+  const createStudent = async () => {
+    if (!studentName || !studentClass) {
+      setStatusMessage("Fill all student details");
       setStatusType("error");
       clearMessage();
       return;
     }
+
     try {
-      await addDoc(collection(db, "messages"), {
-        text: message,
-        date: new Date()
+      const newStudentId = await generateStudentId();
+
+      await setDoc(doc(db, "students", newStudentId), {
+        studentId: newStudentId,
+        name: studentName,
+        class: studentClass,
+        createdAt: new Date(),
       });
-      setMessage("");
-      setStatusMessage("Message sent successfully!");
+
+      setStudentId(newStudentId);
+      setStudentName("");
+      setStudentClass("");
+
+      setStatusMessage(`Student created. ID: ${newStudentId}`);
       setStatusType("success");
       clearMessage();
-    } catch (error) {
-      setStatusMessage("Error sending message: " + error.message);
+    } catch (err) {
+      setStatusMessage(err.message);
       setStatusType("error");
       clearMessage();
     }
+  };
+
+  const sendMessage = async () => {
+    if (!studentId || !message) {
+      setStatusMessage("Student ID & message required");
+      setStatusType("error");
+      clearMessage();
+      return;
+    }
+
+    await addDoc(collection(db, "messages"), {
+      studentId,
+      text: message,
+      date: new Date(),
+    });
+
+    setMessage("");
+    setStatusMessage("Message sent");
+    setStatusType("success");
+    clearMessage();
   };
 
   const addResults = async () => {
     if (!studentId || !subject || !score) {
-      setStatusMessage("Please fill all fields");
+      setStatusMessage("Fill all fields");
       setStatusType("error");
       clearMessage();
       return;
     }
-    try {
-      await setDoc(doc(db, "results", studentId), {
-        [subject.trim().toLowerCase()]: parseInt(score),
-        updatedAt: new Date()
-      }, { merge: true });
-      setStudentId("");
-      setSubject("");
-      setScore("");
-      setStatusMessage("Results added successfully!");
-      setStatusType("success");
-      clearMessage();
-    } catch (error) {
-      setStatusMessage("Error adding results: " + error.message);
-      setStatusType("error");
-      clearMessage();
-    }
+
+    await setDoc(
+      doc(db, "results", studentId),
+      {
+        [subject.toLowerCase()]: parseInt(score),
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    setSubject("");
+    setScore("");
+
+    setStatusMessage("Results added");
+    setStatusType("success");
+    clearMessage();
   };
 
   const addFees = async () => {
     if (!studentId || !totalFees || !paidFees) {
-      setStatusMessage("Please fill all fields");
+      setStatusMessage("Fill all fields");
       setStatusType("error");
       clearMessage();
       return;
     }
-    try {
-      await setDoc(doc(db, "fees", studentId), {
-        total: parseInt(totalFees),
-        paid: parseInt(paidFees),
-        balance: parseInt(totalFees) - parseInt(paidFees),
-        updatedAt: new Date()
-      });
-      setStudentId("");
-      setTotalFees("");
-      setPaidFees("");
-      setStatusMessage("Fees added successfully!");
-      setStatusType("success");
-      clearMessage();
-    } catch (error) {
-      setStatusMessage("Error adding fees: " + error.message);
-      setStatusType("error");
-      clearMessage();
-    }
+
+    await setDoc(doc(db, "fees", studentId), {
+      total: parseInt(totalFees),
+      paid: parseInt(paidFees),
+      balance: parseInt(totalFees) - parseInt(paidFees),
+      updatedAt: new Date(),
+    });
+
+    setTotalFees("");
+    setPaidFees("");
+
+    setStatusMessage("Fees updated");
+    setStatusType("success");
+    clearMessage();
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 p-6">
-      <h2 className="text-2xl font-bold mb-4 text-white">Admin Dashboard</h2>
+    <div className="min-h-screen bg-slate-900 p-6 text-white">
+      <h2 className="text-2xl font-bold mb-4">Admin Dashboard</h2>
 
       {statusMessage && (
-        <div className={`mb-4 p-4 rounded ${statusType === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
+        <div
+          className={`mb-4 p-4 rounded ${
+            statusType === "success" ? "bg-green-600" : "bg-red-600"
+          }`}
+        >
           {statusMessage}
         </div>
       )}
 
       <div className="flex gap-6">
-        <aside className="w-64 bg-slate-800 p-4 rounded shadow border border-slate-700 h-fit">
-          <button
-            onClick={() => setActiveTab("message")}
-            className={`w-full text-left px-4 py-2 rounded mb-2 transition ${
-              activeTab === "message"
-                ? "bg-green-600 text-white font-semibold"
-                : "text-gray-300 hover:bg-slate-700"
-            }`}
-          >
-            Send Message
-          </button>
-          <button
-            onClick={() => setActiveTab("results")}
-            className={`w-full text-left px-4 py-2 rounded mb-2 transition ${
-              activeTab === "results"
-                ? "bg-blue-600 text-white font-semibold"
-                : "text-gray-300 hover:bg-slate-700"
-            }`}
-          >
-            Add Results
-          </button>
-          <button
-            onClick={() => setActiveTab("fees")}
-            className={`w-full text-left px-4 py-2 rounded transition ${
-              activeTab === "fees"
-                ? "bg-blue-600 text-white font-semibold"
-                : "text-gray-300 hover:bg-slate-700"
-            }`}
-          >
-            Add Fees
-          </button>
-
-          <hr className="my-4 border-slate-700" />
-          <h4 className="text-white font-semibold mb-2">Notifications</h4>
-          {messagesList.length > 0 ? (
-            messagesList.map((m, i) => (
-              <p key={i} className="text-gray-300 text-sm border-b border-slate-700 py-1">{m.text}</p>
-            ))
-          ) : (
-            <p className="text-gray-400 text-sm">No messages</p>
-          )}
+        {/* SIDEBAR */}
+        <aside className="w-64 bg-slate-800 p-4 rounded border border-slate-700">
+          {[
+            ["students", "Create Student"],
+            ["message", "Send Message"],
+            ["results", "Add Results"],
+            ["fees", "Add Fees"],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`w-full text-left px-4 py-2 rounded mb-2 ${
+                activeTab === key
+                  ? "bg-blue-600 font-semibold"
+                  : "hover:bg-slate-700"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </aside>
 
-        <main className="flex-1">
-          {activeTab === "message" && (
-            <div className="bg-slate-800 p-6 rounded shadow border border-slate-700">
-              <h3 className="text-lg font-semibold mb-4 text-white">Send Message</h3>
-              <textarea
-                className="w-full border border-slate-600 bg-slate-700 text-white p-3 rounded mb-4 placeholder-gray-400"
-                placeholder="Send message to parents"
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                rows="6"
+        {/* MAIN */}
+        <main className="flex-1 bg-slate-800 p-6 rounded border border-slate-700">
+          {activeTab === "students" && (
+            <>
+              <input
+                placeholder="Student Name"
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                className="w-full mb-3 p-3 bg-slate-700 rounded"
+              />
+              <input
+                placeholder="Class"
+                value={studentClass}
+                onChange={(e) => setStudentClass(e.target.value)}
+                className="w-full mb-4 p-3 bg-slate-700 rounded"
               />
               <button
-                onClick={sendMessage}
-                className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-semibold">
+                onClick={createStudent}
+                className="bg-purple-600 px-6 py-2 rounded"
+              >
+                Create Student
+              </button>
+            </>
+          )}
+
+          {activeTab !== "students" && (
+            <input
+              placeholder="Student ID"
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              className="w-full mb-4 p-3 bg-slate-700 rounded"
+            />
+          )}
+
+          {activeTab === "message" && (
+            <>
+              <textarea
+                rows="5"
+                placeholder="Message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="w-full mb-4 p-3 bg-slate-700 rounded"
+              />
+              <button onClick={sendMessage} className="bg-green-600 px-6 py-2 rounded">
                 Send Message
               </button>
-            </div>
+            </>
           )}
 
           {activeTab === "results" && (
-            <div className="bg-slate-800 p-6 rounded shadow border border-slate-700">
-              <h3 className="text-lg font-semibold mb-4 text-white">Add Results</h3>
+            <>
               <input
-                type="text"
-                placeholder="Student ID"
-                value={studentId}
-                onChange={e => setStudentId(e.target.value)}
-                className="w-full border border-slate-600 bg-slate-700 text-white p-3 rounded mb-3 placeholder-gray-400"
-              />
-              <input
-                type="text"
-                placeholder="Subject (e.g. math)"
+                placeholder="Subject"
                 value={subject}
-                onChange={e => setSubject(e.target.value)}
-                className="w-full border border-slate-600 bg-slate-700 text-white p-3 rounded mb-3 placeholder-gray-400"
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full mb-3 p-3 bg-slate-700 rounded"
               />
               <input
                 type="number"
                 placeholder="Score"
                 value={score}
-                onChange={e => setScore(e.target.value)}
-                className="w-full border border-slate-600 bg-slate-700 text-white p-3 rounded mb-4 placeholder-gray-400"
+                onChange={(e) => setScore(e.target.value)}
+                className="w-full mb-4 p-3 bg-slate-700 rounded"
               />
-              <button
-                onClick={addResults}
-                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold">
+              <button onClick={addResults} className="bg-blue-600 px-6 py-2 rounded">
                 Add Results
               </button>
-            </div>
+            </>
           )}
 
           {activeTab === "fees" && (
-            <div className="bg-slate-800 p-6 rounded shadow border border-slate-700">
-              <h3 className="text-lg font-semibold mb-4 text-white">Add Fees</h3>
-              <input
-                type="text"
-                placeholder="Student ID"
-                value={studentId}
-                onChange={e => setStudentId(e.target.value)}
-                className="w-full border border-slate-600 bg-slate-700 text-white p-3 rounded mb-3 placeholder-gray-400"
-              />
+            <>
               <input
                 type="number"
                 placeholder="Total Fees"
                 value={totalFees}
-                onChange={e => setTotalFees(e.target.value)}
-                className="w-full border border-slate-600 bg-slate-700 text-white p-3 rounded mb-3 placeholder-gray-400"
+                onChange={(e) => setTotalFees(e.target.value)}
+                className="w-full mb-3 p-3 bg-slate-700 rounded"
               />
               <input
                 type="number"
-                placeholder="Paid Amount"
+                placeholder="Paid Fees"
                 value={paidFees}
-                onChange={e => setPaidFees(e.target.value)}
-                className="w-full border border-slate-600 bg-slate-700 text-white p-3 rounded mb-4 placeholder-gray-400"
+                onChange={(e) => setPaidFees(e.target.value)}
+                className="w-full mb-4 p-3 bg-slate-700 rounded"
               />
-              <button
-                onClick={addFees}
-                className="w-full bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold">
+              <button onClick={addFees} className="bg-blue-600 px-6 py-2 rounded">
                 Add Fees
               </button>
-            </div>
+            </>
           )}
         </main>
       </div>
